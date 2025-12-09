@@ -20,17 +20,17 @@
 
 int isColumnFull(char[][COLS], int, int, int); //done
 
-int isBoardFull(char[][COLS], int, int);
+int isBoardFull(char[][COLS], int, int); //done
 
-int isInBounds(int, int, int, int);
+int isInBounds(int, int, int, int); //done
 
 /* Return index of row where token will land, or -1 if column full */
-int getFreeRow(char[][COLS], int, int, int);
+int getFreeRow(char[][COLS], int, int, int); //done
 
 /* Place token in column (0-based). Return row index or -1 if illegal */
-int makeMove(char[][COLS], int, int, int, char);
+int makeMove(char[][COLS], int, int, int, char); //done
 
-int checkVictory(char[][COLS], int, int, int, int, char);
+int checkVictory(char[][COLS], int, int, int, int, char); 
 
 /* Human player: asks repeatedly until a valid non-full column is chosen (0-based) */
 int humanChoose(char[][COLS], int, int); //done
@@ -58,6 +58,7 @@ int main() {
     return 0;
 }
 
+
 void printBoard(char board[][COLS], int rows, int cols) {
     printf("\n");
     for (int r = 0; r < rows; r++) {
@@ -73,6 +74,7 @@ void printBoard(char board[][COLS], int rows, int cols) {
     }
     printf("\n\n");
 }
+
 
 int getPlayerType(int playerNumber) {
     char ch;
@@ -92,6 +94,7 @@ int getPlayerType(int playerNumber) {
     }
 }
 
+
 void initBoard(char board[][COLS], int rows, int cols) {
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
@@ -99,6 +102,7 @@ void initBoard(char board[][COLS], int rows, int cols) {
         }
     }
 }
+
 
 void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Type) {
     int currentPlayer = 1;
@@ -151,6 +155,7 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
     }
 } 
 
+
 int humanChoose(char board[][COLS], int rows, int cols) {
     int column;
     
@@ -174,12 +179,14 @@ int humanChoose(char board[][COLS], int rows, int cols) {
     }
 }
 
+
 int isColumnFull(char board[][COLS], int rows, int cols, int column) {
     if (board[0][column] != EMPTY) {
         return 1;
     }
     return 0;
 }
+
 
 int getFreeRow(char board[][COLS], int rows, int cols, int column) {
     for (int r = rows - 1; r >= 0; r--) {
@@ -190,3 +197,113 @@ int getFreeRow(char board[][COLS], int rows, int cols, int column) {
     return -1;
 }
 
+
+int makeMove(char board[][COLS], int rows, int cols, int column, char token) {
+    int row = getFreeRow(board, rows, cols, column);
+    if (row == -1) {
+        return -1;
+    }
+    board[row][column] = token;
+    return row;
+}
+
+
+int isBoardFull(char board[][COLS], int rows, int cols) {
+    for (int c = 0; c < cols; c++) {
+        if (!isColumnFull(board, rows, cols, c)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
+int isInBounds(int row, int col, int rows, int cols) {
+    if (row >= 0 && row < rows && col >= 0 && col < cols) {
+        return 1;
+    }
+    return 0;
+}
+
+
+int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char token) {
+    int count;
+    
+    // Check horizontal
+    count = 0;
+    for (int c = 0; c < cols; c++) {
+        if (board[row][c] == token) {
+            count++;
+            if (count >= CONNECT_N) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+    }
+    
+    // Check vertical
+    count = 0;
+    for (int r = 0; r < rows; r++) {
+        if (board[r][col] == token) {
+            count++;
+            if (count >= CONNECT_N) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+    }
+    
+    // Check diagonal \
+    count = 0;
+    // Find top-left start of this diagonal
+    int r = row;
+    int c = col;
+    while (r > 0 && c > 0) {
+        r--;
+        c--;
+    }
+    // Scan the diagonal
+    while (isInBounds(r, c, rows, cols)) {
+        if (board[r][c] == token) {
+            count++;
+            if (count >= CONNECT_N) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+        r++;
+        c++;
+    }
+    
+    // Check diagonal /
+    count = 0;
+    // Find top-right start of this diagonal
+    r = row;
+    c = col;
+    while (r > 0 && c < cols - 1) {
+        r--;
+        c++;
+    }
+    // Scan the diagonal
+    while (isInBounds(r, c, rows, cols)) {
+        if (board[r][c] == token) {
+            count++;
+            if (count >= CONNECT_N) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+        r++;
+        c--;
+    }
+    
+    return 0;
+}
