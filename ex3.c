@@ -18,7 +18,7 @@
 #define HUMAN 1
 #define COMPUTER 2
 
-int isColumnFull(char[][COLS], int, int, int);
+int isColumnFull(char[][COLS], int, int, int); //done
 
 int isBoardFull(char[][COLS], int, int);
 
@@ -33,12 +33,12 @@ int makeMove(char[][COLS], int, int, int, char);
 int checkVictory(char[][COLS], int, int, int, int, char);
 
 /* Human player: asks repeatedly until a valid non-full column is chosen (0-based) */
-int humanChoose(char[][COLS], int, int);
+int humanChoose(char[][COLS], int, int); //done
 
 /* Computer*/
 int computerChoose(char[][COLS], int, int, char, char);
 
-void runConnectFour(char[][COLS], int, int, int, int);
+void runConnectFour(char[][COLS], int, int, int, int); //done
 
 void initBoard(char[][COLS], int, int); //done
 
@@ -152,4 +152,41 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
 } 
 
 int humanChoose(char board[][COLS], int rows, int cols) {
+    int column;
+    
+    while (1) {
+        printf("Enter column (1-%d): ", cols);
+        int n = scanf("%d", &column);
+        if (n != 1) {
+            printf("Invalid input. Enter a number.\n");
+            while (getchar() != '\n');
+            continue;
+        }
+        if (column < 1 || column > cols) {
+            printf("Invalid column. Choose between 1 and %d.\n", cols);
+            continue;
+        }
+        if (isColumnFull(board, rows, cols, column - 1)) {
+            printf("Column %d is full. Choose another column.\n", column);
+            continue;
+        } 
+        return column - 1;
+    }
 }
+
+int isColumnFull(char board[][COLS], int rows, int cols, int column) {
+    if (board[0][column] != EMPTY) {
+        return 1;
+    }
+    return 0;
+}
+
+int getFreeRow(char board[][COLS], int rows, int cols, int column) {
+    for (int r = rows - 1; r >= 0; r--) {
+        if (board[r][column] == EMPTY) {
+            return r;
+        }
+    }
+    return -1;
+}
+
