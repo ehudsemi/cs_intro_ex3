@@ -40,11 +40,11 @@ int computerChoose(char[][COLS], int, int, char, char);
 
 void runConnectFour(char[][COLS], int, int, int, int);
 
-void initBoard(char[][COLS], int, int);
+void initBoard(char[][COLS], int, int); //done
 
-void printBoard(char[][COLS], int, int);
+void printBoard(char[][COLS], int, int); //done
 
-int getPlayerType(int);
+int getPlayerType(int); //done
 
 
 int main() {
@@ -90,4 +90,66 @@ int getPlayerType(int playerNumber) {
         printf("Invalid selection. Enter h or c.\n");
         while (getchar() != '\n'); // clear rest of input
     }
+}
+
+void initBoard(char board[][COLS], int rows, int cols) {
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            board[r][c]='.';
+        }
+    }
+}
+
+void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Type) {
+    int currentPlayer = 1;
+    char currentToken = TOKEN_P1;
+    int currentPlayerType = p1Type;
+    int gameOver = 0;
+
+    while (!gameOver) {
+        //print whose turn it is
+        printf("Player %d (%c) turn.\n", currentPlayer, currentToken);
+        // Get column choice based on player type
+        int chosenColumn;
+        if (currentPlayerType == HUMAN) {
+            chosenColumn = humanChoose(board, rows, cols);
+        }
+        else {
+            char opponentToken = (currentToken == TOKEN_P1) ? TOKEN_P2 : TOKEN_P1;
+            chosenColumn = computerChoose(board, rows, cols, currentToken, opponentToken);
+            printf("Computer chose column %d\n", chosenColumn + 1);
+        }
+        // Make the move
+        int row = makeMove(board, rows, cols, chosenColumn, currentToken);
+        
+        // Print the updated board
+        printBoard(board, rows, cols);
+        
+        // Check if current player won
+        if (checkVictory(board, rows, cols, row, chosenColumn, currentToken)) {
+            printf("Player %d (%c) wins!\n", currentPlayer, currentToken);
+            gameOver = 1;
+        }
+        // Check if board is full (tie)
+        else if (isBoardFull(board, rows, cols)) {
+            printf("Board full and no winner. It's a tie!\n");
+            gameOver = 1;
+        }
+        // Switch to other player
+        else {
+            if (currentPlayer == 1) {
+                currentPlayer = 2;
+                currentToken = TOKEN_P2;
+                currentPlayerType = p2Type;
+            }
+            else {
+                currentPlayer = 1;
+                currentToken = TOKEN_P1;
+                currentPlayerType = p1Type;
+            }
+        }
+    }
+} 
+
+int humanChoose(char board[][COLS], int rows, int cols) {
 }
