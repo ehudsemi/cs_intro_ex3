@@ -30,7 +30,7 @@ int getFreeRow(char[][COLS], int, int, int); //done
 /* Place token in column (0-based). Return row index or -1 if illegal */
 int makeMove(char[][COLS], int, int, int, char); //done
 
-int checkVictory(char[][COLS], int, int, int, int, char); 
+int checkVictory(char[][COLS], int, int, int, int, char); //done
 
 /* Human player: asks repeatedly until a valid non-full column is chosen (0-based) */
 int humanChoose(char[][COLS], int, int); //done
@@ -98,7 +98,7 @@ int getPlayerType(int playerNumber) {
 void initBoard(char board[][COLS], int rows, int cols) {
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
-            board[r][c]='.';
+            board[r][c]=EMPTY;
         }
     }
 }
@@ -257,9 +257,9 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
         }
     }
     
-    // Check diagonal \
+    // Check \diagonal 
     count = 0;
-    // Find top-left start of this diagonal
+    // Find top left start of this diagonal
     int r = row;
     int c = col;
     while (r > 0 && c > 0) {
@@ -304,6 +304,180 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
         r++;
         c--;
     }
+    return 0;
+}
+
+int computerChoose(char board[][COLS], int rows, int cols, char computerToken, char opponentToken) {
+    int centerCol = cols / 2;
     
+    // Priority 1: Check for winning move
+    for (int c = 0; c < cols; c++) {
+        if (!isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = computerToken;
+            if (checkVictory(board, rows, cols, r, c, computerToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
+            board[r][c] = EMPTY;
+        }
+    }
+    
+    // Priority 2: Block opponent's winning move
+    for (int c = 0; c < cols; c++) {
+        if (!isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = opponentToken;
+            if (checkVictory(board, rows, cols, r, c, opponentToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
+            board[r][c] = EMPTY;
+        }
+    }
+    
+    // Priority 3: Create a sequence of three - use ordering rule
+    for (int dist = 0; dist <= centerCol; dist++) {
+        int c = centerCol - dist;
+        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = computerToken;
+            if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
+            board[r][c] = EMPTY;
+        }
+        if (dist > 0) {
+            c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = computerToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+        }
+    }
+    
+    // Priority 4: Block opponent's sequence of three - use ordering rule
+    for (int dist = 0; dist <= centerCol; dist++) {
+        int c = centerCol - dist;
+        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = opponentToken;
+            if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
+            board[r][c] = EMPTY;
+        }
+        if (dist > 0) {
+            c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = opponentToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+        }
+    }
+    
+    // Priority 5: Choose by ordering rule
+    for (int dist = 0; dist <= centerCol; dist++) {
+        int c = centerCol - dist;
+        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
+            return c;
+        }
+        if (dist > 0) {
+            c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                return c;
+            }
+        }
+    }
+    
+    return 0;
+}
+
+int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int col, char token) {
+    int count;
+    
+    // Check horizontal
+    count = 0;
+    for (int c = 0; c < cols; c++) {
+        if (board[row][c] == token) {
+            count++;
+            if (count == 3) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+    }
+    
+    // Check vertical
+    count = 0;
+    for (int r = 0; r < rows; r++) {
+        if (board[r][col] == token) {
+            count++;
+            if (count == 3) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+    }
+    
+    // Check \diagonal 
+    count = 0;
+    int r = row;
+    int c = col;
+    while (r > 0 && c > 0) {
+        r--;
+        c--;
+    }
+    while (isInBounds(r, c, rows, cols)) {
+        if (board[r][c] == token) {
+            count++;
+            if (count == 3) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+        r++;
+        c++;
+    }
+    
+    // Check diagonal /
+    count = 0;
+    r = row;
+    c = col;
+    while (r > 0 && c < cols - 1) {
+        r--;
+        c++;
+    }
+    while (isInBounds(r, c, rows, cols)) {
+        if (board[r][c] == token) {
+            count++;
+            if (count == 3) {
+                return 1;
+            }
+        }
+        else {
+            count = 0;
+        }
+        r++;
+        c--;
+    }
     return 0;
 }
