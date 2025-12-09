@@ -36,7 +36,9 @@ int checkVictory(char[][COLS], int, int, int, int, char); //done
 int humanChoose(char[][COLS], int, int); //done
 
 /* Computer*/
-int computerChoose(char[][COLS], int, int, char, char);
+int computerChoose(char[][COLS], int, int, char, char); //done
+
+int checkSequenceOfThree(char[][COLS], int, int, int, int, char); //done
 
 void runConnectFour(char[][COLS], int, int, int, int); //done
 
@@ -60,7 +62,6 @@ int main() {
 
 
 void printBoard(char board[][COLS], int rows, int cols) {
-    printf("\n");
     for (int r = 0; r < rows; r++) {
         printf("|");
         for (int c = 0; c < cols; c++) {
@@ -307,8 +308,9 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
     return 0;
 }
 
+
 int computerChoose(char board[][COLS], int rows, int cols, char computerToken, char opponentToken) {
-    int centerCol = cols / 2;
+    int centerCol = (cols-1) / 2;
     
     // Priority 1: Check for winning move
     for (int c = 0; c < cols; c++) {
@@ -337,20 +339,32 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
     }
     
     // Priority 3: Create a sequence of three - use ordering rule
-    for (int dist = 0; dist <= centerCol; dist++) {
-        int c = centerCol - dist;
-        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
-            board[r][c] = computerToken;
-            if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
-                board[r][c] = EMPTY;
-                return c;
-            }
-            board[r][c] = EMPTY;
-        }
-        if (dist > 0) {
-            c = centerCol + dist;
+    for (int dist = 0; dist < cols; dist++) {
+        if (dist == 0) {
+            int c = centerCol;
             if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = computerToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+        }
+        else {
+            int c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = computerToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+            c = centerCol - dist;
+            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
                 int r = getFreeRow(board, rows, cols, c);
                 board[r][c] = computerToken;
                 if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
@@ -363,20 +377,32 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
     }
     
     // Priority 4: Block opponent's sequence of three - use ordering rule
-    for (int dist = 0; dist <= centerCol; dist++) {
-        int c = centerCol - dist;
-        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
-            board[r][c] = opponentToken;
-            if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
-                board[r][c] = EMPTY;
-                return c;
-            }
-            board[r][c] = EMPTY;
-        }
-        if (dist > 0) {
-            c = centerCol + dist;
+    for (int dist = 0; dist < cols; dist++) {
+        if (dist == 0) {
+            int c = centerCol;
             if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = opponentToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+        }
+        else {
+            int c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                int r = getFreeRow(board, rows, cols, c);
+                board[r][c] = opponentToken;
+                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
+                    board[r][c] = EMPTY;
+                    return c;
+                }
+                board[r][c] = EMPTY;
+            }
+            c = centerCol - dist;
+            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
                 int r = getFreeRow(board, rows, cols, c);
                 board[r][c] = opponentToken;
                 if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
@@ -389,14 +415,20 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
     }
     
     // Priority 5: Choose by ordering rule
-    for (int dist = 0; dist <= centerCol; dist++) {
-        int c = centerCol - dist;
-        if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-            return c;
-        }
-        if (dist > 0) {
-            c = centerCol + dist;
+    for (int dist = 0; dist < cols; dist++) {
+        if (dist == 0) {
+            int c = centerCol;
             if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                return c;
+            }
+        }
+        else {
+            int c = centerCol + dist;
+            if (c < cols && !isColumnFull(board, rows, cols, c)) {
+                return c;
+            }
+            c = centerCol - dist;
+            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
                 return c;
             }
         }
