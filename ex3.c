@@ -18,7 +18,9 @@
 #define HUMAN 1
 #define COMPUTER 2
 
-int isColumnFull(char[][COLS], int, int, int); //done
+int isColumnFull(char[][COLS], int); //done
+
+int getColumnByOrder(int, int);
 
 int isBoardFull(char[][COLS], int, int); //done
 
@@ -172,7 +174,7 @@ int humanChoose(char board[][COLS], int rows, int cols) {
             printf("Invalid column. Choose between 1 and %d.\n", cols);
             continue;
         }
-        if (isColumnFull(board, rows, cols, column - 1)) {
+        if (isColumnFull(board, column - 1)) {
             printf("Column %d is full. Choose another column.\n", column);
             continue;
         } 
@@ -181,7 +183,7 @@ int humanChoose(char board[][COLS], int rows, int cols) {
 }
 
 
-int isColumnFull(char board[][COLS], int rows, int cols, int column) {
+int isColumnFull(char board[][COLS], int column) {
     if (board[0][column] != EMPTY) {
         return 1;
     }
@@ -211,7 +213,7 @@ int makeMove(char board[][COLS], int rows, int cols, int column, char token) {
 
 int isBoardFull(char board[][COLS], int rows, int cols) {
     for (int c = 0; c < cols; c++) {
-        if (!isColumnFull(board, rows, cols, c)) {
+        if (!isColumnFull(board, c)) {
             return 0;
         }
     }
@@ -310,74 +312,72 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
 
 
 int computerChoose(char board[][COLS], int rows, int cols, char computerToken, char opponentToken) {
-    int centerCol = (cols - 1) / 2;
-    int order[COLS];
-    int idx = 0;
-
-    // Build the column order array according to the ordering rule
-    for (int dist = 0; dist < cols; dist++) {
-        int left = centerCol - dist;
-        int right = centerCol + dist;
-        if (left >= 0) order[idx++] = left;
-        if (dist != 0 && right < cols) order[idx++] = right;
-    }
+    int i, c, r;
 
     // Priority 1: Winning move
-    for (int i = 0; i < cols; i++) {
-        int c = order[i];
-        if (!isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
+    for (i = 0; i < cols; i++) {
+        c = getColumnByOrder(cols, i);
+        if (!isColumnFull(board, c)) {
+            r = getFreeRow(board, rows, cols, c);
             board[r][c] = computerToken;
-            int win = checkVictory(board, rows, cols, r, c, computerToken);
+            if (checkVictory(board, rows, cols, r, c, computerToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
             board[r][c] = EMPTY;
-            if (win) return c;
         }
     }
 
-    // Priority 2: Block opponents winning move
-    for (int i = 0; i < cols; i++) {
-        int c = order[i];
-        if (!isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
+    // Priority 2: Block opponent's winning move
+    for (i = 0; i < cols; i++) {
+        c = getColumnByOrder(cols, i);
+        if (!isColumnFull(board, c)) {
+            r = getFreeRow(board, rows, cols, c);
             board[r][c] = opponentToken;
-            int block = checkVictory(board, rows, cols, r, c, opponentToken);
+            if (checkVictory(board, rows, cols, r, c, opponentToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
             board[r][c] = EMPTY;
-            if (block) return c;
         }
     }
 
     // Priority 3: Create a sequence of three
-    for (int i = 0; i < cols; i++) {
-        int c = order[i];
-        if (!isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
+    for (i = 0; i < cols; i++) {
+        c = getColumnByOrder(cols, i);
+        if (!isColumnFull(board, c)) {
+            r = getFreeRow(board, rows, cols, c);
             board[r][c] = computerToken;
-            int seq = checkSequenceOfThree(board, rows, cols, r, c, computerToken);
+            if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
             board[r][c] = EMPTY;
-            if (seq) return c;
         }
     }
 
-    // Priority 4: Block opponents sequence of three
-    for (int i = 0; i < cols; i++) {
-        int c = order[i];
-        if (!isColumnFull(board, rows, cols, c)) {
-            int r = getFreeRow(board, rows, cols, c);
+    // Priority 4: Block opponent's sequence of three
+    for (i = 0; i < cols; i++) {
+        c = getColumnByOrder(cols, i);
+        if (!isColumnFull(board, c)) {
+            r = getFreeRow(board, rows, cols, c);
             board[r][c] = opponentToken;
-            int blockSeq = checkSequenceOfThree(board, rows, cols, r, c, opponentToken);
+            if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
+                board[r][c] = EMPTY;
+                return c;
+            }
             board[r][c] = EMPTY;
-            if (blockSeq) return c;
         }
     }
 
     // Priority 5: Arbitrary ordering rule
-    for (int i = 0; i < cols; i++) {
-        int c = order[i];
-        if (!isColumnFull(board, rows, cols, c)) {
+    for (i = 0; i < cols; i++) {
+        c = getColumnByOrder(cols, i);
+        if (!isColumnFull(board, c)) {
             return c;
         }
     }
-    return 0;
+    return 0; 
 }
 
 int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int col, char token) {
@@ -405,4 +405,21 @@ int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int co
         if (count >= 3) return 1;
     }
     return 0;
+}
+
+// Returns the column index for the i-th position in the ordering rule
+int getColumnByOrder(int cols, int i) {
+    int center = (cols - 1) / 2;
+    int dist = i / 2;
+    if (i % 2 == 0) {
+        // Even: left of center (including center itself)
+        int col = center - dist;
+        if (col >= 0) return col;
+        else return center + dist; // fallback, should not happen
+    } else {
+        // Odd: right of center
+        int col = center + dist + 1;
+        if (col < cols) return col;
+        else return center - dist - 1; // fallback, should not happen
+    }
 }
