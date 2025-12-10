@@ -20,17 +20,17 @@
 
 int isColumnFull(char[][COLS], int); //done
 
-int getColumnByOrder(int, int);
+int getColumnByOrder(int, int); //done
 
 int isBoardFull(char[][COLS], int, int); //done
 
 int isInBounds(int, int, int, int); //done
 
 /* Return index of row where token will land, or -1 if column full */
-int getFreeRow(char[][COLS], int, int, int); //done
+int getFreeRow(char[][COLS], int, int); //done
 
 /* Place token in column (0-based). Return row index or -1 if illegal */
-int makeMove(char[][COLS], int, int, int, char); //done
+int makeMove(char[][COLS], int, int, char); //done
 
 int checkVictory(char[][COLS], int, int, int, int, char); //done
 
@@ -127,7 +127,7 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
             printf("Computer chose column %d\n", chosenColumn + 1);
         }
         // Make the move
-        int row = makeMove(board, rows, cols, chosenColumn, currentToken);
+        int row = makeMove(board, rows, chosenColumn, currentToken);
         
         // Print the updated board
         printBoard(board, rows, cols);
@@ -191,7 +191,7 @@ int isColumnFull(char board[][COLS], int column) {
 }
 
 
-int getFreeRow(char board[][COLS], int rows, int cols, int column) {
+int getFreeRow(char board[][COLS], int rows, int column) {
     for (int r = rows - 1; r >= 0; r--) {
         if (board[r][column] == EMPTY) {
             return r;
@@ -201,8 +201,8 @@ int getFreeRow(char board[][COLS], int rows, int cols, int column) {
 }
 
 
-int makeMove(char board[][COLS], int rows, int cols, int column, char token) {
-    int row = getFreeRow(board, rows, cols, column);
+int makeMove(char board[][COLS], int rows, int column, char token) {
+    int row = getFreeRow(board, rows, column);
     if (row == -1) {
         return -1;
     }
@@ -286,7 +286,7 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
     
     // Check diagonal /
     count = 0;
-    // Find top-right start of this diagonal
+    // Find top right start of this diagonal
     r = row;
     c = col;
     while (r > 0 && c < cols - 1) {
@@ -318,7 +318,7 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
     for (i = 0; i < cols; i++) {
         c = getColumnByOrder(cols, i);
         if (!isColumnFull(board, c)) {
-            r = getFreeRow(board, rows, cols, c);
+            r = getFreeRow(board, rows, c);
             board[r][c] = computerToken;
             if (checkVictory(board, rows, cols, r, c, computerToken)) {
                 board[r][c] = EMPTY;
@@ -328,11 +328,11 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
         }
     }
 
-    // Priority 2: Block opponent's winning move
+    // Priority 2: Block opponents winning move
     for (i = 0; i < cols; i++) {
         c = getColumnByOrder(cols, i);
         if (!isColumnFull(board, c)) {
-            r = getFreeRow(board, rows, cols, c);
+            r = getFreeRow(board, rows, c);
             board[r][c] = opponentToken;
             if (checkVictory(board, rows, cols, r, c, opponentToken)) {
                 board[r][c] = EMPTY;
@@ -346,7 +346,7 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
     for (i = 0; i < cols; i++) {
         c = getColumnByOrder(cols, i);
         if (!isColumnFull(board, c)) {
-            r = getFreeRow(board, rows, cols, c);
+            r = getFreeRow(board, rows, c);
             board[r][c] = computerToken;
             if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
                 board[r][c] = EMPTY;
@@ -356,11 +356,11 @@ int computerChoose(char board[][COLS], int rows, int cols, char computerToken, c
         }
     }
 
-    // Priority 4: Block opponent's sequence of three
+    // Priority 4: Block opponents sequence of three
     for (i = 0; i < cols; i++) {
         c = getColumnByOrder(cols, i);
         if (!isColumnFull(board, c)) {
-            r = getFreeRow(board, rows, cols, c);
+            r = getFreeRow(board, rows, c);
             board[r][c] = opponentToken;
             if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
                 board[r][c] = EMPTY;
@@ -407,7 +407,7 @@ int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int co
     return 0;
 }
 
-// Returns the column index for the i-th position in the ordering rule
+// Returns the column index for the i position in the ordering rule
 int getColumnByOrder(int cols, int i) {
     int center = (cols - 1) / 2;
     int dist = i / 2;
@@ -415,11 +415,11 @@ int getColumnByOrder(int cols, int i) {
         // Even: left of center (including center itself)
         int col = center - dist;
         if (col >= 0) return col;
-        else return center + dist; // fallback, should not happen
+        else return center + dist; 
     } else {
         // Odd: right of center
         int col = center + dist + 1;
         if (col < cols) return col;
-        else return center - dist - 1; // fallback, should not happen
+        else return center - dist - 1; 
     }
 }
