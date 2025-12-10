@@ -22,7 +22,7 @@ int isColumnFull(char[][COLS], int); //done
 
 int getColumnByOrder(int, int); //done
 
-int isBoardFull(char[][COLS], int, int); //done
+int isBoardFull(char[][COLS], int); //done
 
 int isInBounds(int, int, int, int); //done
 
@@ -35,7 +35,7 @@ int makeMove(char[][COLS], int, int, char); //done
 int checkVictory(char[][COLS], int, int, int, int, char); //done
 
 /* Human player: asks repeatedly until a valid non-full column is chosen (0-based) */
-int humanChoose(char[][COLS], int, int); //done
+int humanChoose(char[][COLS], int); //done
 
 /* Computer*/
 int computerChoose(char[][COLS], int, int, char, char); //done
@@ -119,7 +119,7 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
         // Get column choice based on player type
         int chosenColumn;
         if (currentPlayerType == HUMAN) {
-            chosenColumn = humanChoose(board, rows, cols);
+            chosenColumn = humanChoose(board, cols);
         }
         else {
             char opponentToken = (currentToken == TOKEN_P1) ? TOKEN_P2 : TOKEN_P1;
@@ -138,7 +138,7 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
             gameOver = 1;
         }
         // Check if board is full (tie)
-        else if (isBoardFull(board, rows, cols)) {
+        else if (isBoardFull(board, cols)) {
             printf("Board full and no winner. It's a tie!\n");
             gameOver = 1;
         }
@@ -159,7 +159,7 @@ void runConnectFour(char board[][COLS], int rows, int cols, int p1Type, int p2Ty
 } 
 
 
-int humanChoose(char board[][COLS], int rows, int cols) {
+int humanChoose(char board[][COLS], int cols) {
     int column;
     
     while (1) {
@@ -211,7 +211,7 @@ int makeMove(char board[][COLS], int rows, int column, char token) {
 }
 
 
-int isBoardFull(char board[][COLS], int rows, int cols) {
+int isBoardFull(char board[][COLS], int cols) {
     for (int c = 0; c < cols; c++) {
         if (!isColumnFull(board, c)) {
             return 0;
