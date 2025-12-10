@@ -1,11 +1,11 @@
 #include <stdio.h>
 
 #ifndef ROWS
-#define ROWS 10
+#define ROWS 6
 #endif
 
 #ifndef COLS
-#define COLS 4
+#define COLS 7
 #endif
 
 #define CONNECT_N 4
@@ -310,207 +310,99 @@ int checkVictory(char board[][COLS], int rows, int cols, int row, int col, char 
 
 
 int computerChoose(char board[][COLS], int rows, int cols, char computerToken, char opponentToken) {
-    int centerCol = (cols-1) / 2;
-    
-    // Priority 1: Check for winning move
-    for (int c = 0; c < cols; c++) {
+    int centerCol = (cols - 1) / 2;
+    int order[COLS];
+    int idx = 0;
+
+    // Build the column order array according to the ordering rule
+    for (int dist = 0; dist < cols; dist++) {
+        int left = centerCol - dist;
+        int right = centerCol + dist;
+        if (left >= 0) order[idx++] = left;
+        if (dist != 0 && right < cols) order[idx++] = right;
+    }
+
+    // Priority 1: Winning move
+    for (int i = 0; i < cols; i++) {
+        int c = order[i];
         if (!isColumnFull(board, rows, cols, c)) {
             int r = getFreeRow(board, rows, cols, c);
             board[r][c] = computerToken;
-            if (checkVictory(board, rows, cols, r, c, computerToken)) {
-                board[r][c] = EMPTY;
-                return c;
-            }
+            int win = checkVictory(board, rows, cols, r, c, computerToken);
             board[r][c] = EMPTY;
+            if (win) return c;
         }
     }
-    
-    // Priority 2: Block opponent's winning move
-    for (int c = 0; c < cols; c++) {
+
+    // Priority 2: Block opponents winning move
+    for (int i = 0; i < cols; i++) {
+        int c = order[i];
         if (!isColumnFull(board, rows, cols, c)) {
             int r = getFreeRow(board, rows, cols, c);
             board[r][c] = opponentToken;
-            if (checkVictory(board, rows, cols, r, c, opponentToken)) {
-                board[r][c] = EMPTY;
-                return c;
-            }
+            int block = checkVictory(board, rows, cols, r, c, opponentToken);
             board[r][c] = EMPTY;
+            if (block) return c;
         }
     }
-    
-    // Priority 3: Create a sequence of three - use ordering rule
-    for (int dist = 0; dist < cols; dist++) {
-        if (dist == 0) {
-            int c = centerCol;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = computerToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
-        }
-        else {
-            int c = centerCol + dist;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = computerToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
-            c = centerCol - dist;
-            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = computerToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, computerToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
+
+    // Priority 3: Create a sequence of three
+    for (int i = 0; i < cols; i++) {
+        int c = order[i];
+        if (!isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = computerToken;
+            int seq = checkSequenceOfThree(board, rows, cols, r, c, computerToken);
+            board[r][c] = EMPTY;
+            if (seq) return c;
         }
     }
-    
-    // Priority 4: Block opponent's sequence of three - use ordering rule
-    for (int dist = 0; dist < cols; dist++) {
-        if (dist == 0) {
-            int c = centerCol;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = opponentToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
-        }
-        else {
-            int c = centerCol + dist;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = opponentToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
-            c = centerCol - dist;
-            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-                int r = getFreeRow(board, rows, cols, c);
-                board[r][c] = opponentToken;
-                if (checkSequenceOfThree(board, rows, cols, r, c, opponentToken)) {
-                    board[r][c] = EMPTY;
-                    return c;
-                }
-                board[r][c] = EMPTY;
-            }
+
+    // Priority 4: Block opponents sequence of three
+    for (int i = 0; i < cols; i++) {
+        int c = order[i];
+        if (!isColumnFull(board, rows, cols, c)) {
+            int r = getFreeRow(board, rows, cols, c);
+            board[r][c] = opponentToken;
+            int blockSeq = checkSequenceOfThree(board, rows, cols, r, c, opponentToken);
+            board[r][c] = EMPTY;
+            if (blockSeq) return c;
         }
     }
-    
-    // Priority 5: Choose by ordering rule
-    for (int dist = 0; dist < cols; dist++) {
-        if (dist == 0) {
-            int c = centerCol;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                return c;
-            }
-        }
-        else {
-            int c = centerCol + dist;
-            if (c < cols && !isColumnFull(board, rows, cols, c)) {
-                return c;
-            }
-            c = centerCol - dist;
-            if (c >= 0 && !isColumnFull(board, rows, cols, c)) {
-                return c;
-            }
+
+    // Priority 5: Arbitrary ordering rule
+    for (int i = 0; i < cols; i++) {
+        int c = order[i];
+        if (!isColumnFull(board, rows, cols, c)) {
+            return c;
         }
     }
-    
     return 0;
 }
 
 int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int col, char token) {
-    int count;
-    
-    // Check horizontal
-    count = 0;
-    for (int c = 0; c < cols; c++) {
-        if (board[row][c] == token) {
+    int directions[4][2] = { {0,1}, {1,0}, {1,1}, {1,-1} }; // horiz, vert, diag\, diag/
+    for (int d = 0; d < 4; d++) {
+        int dr = directions[d][0];
+        int dc = directions[d][1];
+        int count = 1; // count the placed token
+
+        // Check in the positive direction
+        int r = row + dr, c = col + dc;
+        while (isInBounds(r, c, rows, cols) && board[r][c] == token) {
             count++;
-            if (count == 3) {
-                return 1;
-            }
+            r += dr;
+            c += dc;
         }
-        else {
-            count = 0;
-        }
-    }
-    
-    // Check vertical
-    count = 0;
-    for (int r = 0; r < rows; r++) {
-        if (board[r][col] == token) {
+        // Check in the negative direction
+        r = row - dr;
+        c = col - dc;
+        while (isInBounds(r, c, rows, cols) && board[r][c] == token) {
             count++;
-            if (count == 3) {
-                return 1;
-            }
+            r -= dr;
+            c -= dc;
         }
-        else {
-            count = 0;
-        }
+        if (count >= 3) return 1;
     }
-    
-    // Check \diagonal 
-    count = 0;
-    int r = row;
-    int c = col;
-    while (r > 0 && c > 0) {
-        r--;
-        c--;
-    }
-    while (isInBounds(r, c, rows, cols)) {
-        if (board[r][c] == token) {
-            count++;
-            if (count == 3) {
-                return 1;
-            }
-        }
-        else {
-            count = 0;
-        }
-        r++;
-        c++;
-    }
-    
-    // Check diagonal /
-    count = 0;
-    r = row;
-    c = col;
-    while (r > 0 && c < cols - 1) {
-        r--;
-        c++;
-    }
-    while (isInBounds(r, c, rows, cols)) {
-        if (board[r][c] == token) {
-            count++;
-            if (count == 3) {
-                return 1;
-            }
-        }
-        else {
-            count = 0;
-        }
-        r++;
-        c--;
-    }
-    
     return 0;
 }
