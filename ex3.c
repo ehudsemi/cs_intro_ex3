@@ -1,11 +1,11 @@
 #include <stdio.h>
 
 #ifndef ROWS
-#define ROWS 6
+#define ROWS 10
 #endif
 
 #ifndef COLS
-#define COLS 7
+#define COLS 4
 #endif
 
 #define CONNECT_N 4
@@ -511,5 +511,6 @@ int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int co
         r++;
         c--;
     }
+    
     return 0;
 }
