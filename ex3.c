@@ -64,6 +64,7 @@ int main() {
 
 
 void printBoard(char board[][COLS], int rows, int cols) {
+    printf("\n");
     for (int r = 0; r < rows; r++) {
         printf("|");
         for (int c = 0; c < cols; c++) {
@@ -410,16 +411,13 @@ int checkSequenceOfThree(char board[][COLS], int rows, int cols, int row, int co
 // Returns the column index for the i position in the ordering rule
 int getColumnByOrder(int cols, int i) {
     int center = (cols - 1) / 2;
-    int dist = i / 2;
-    if (i % 2 == 0) {
-        // Even: left of center (including center itself)
-        int col = center - dist;
-        if (col >= 0) return col;
-        else return center + dist; 
+    if (i == 0) return center;
+    int offset = (i + 1) / 2;
+    if (i % 2 == 1) {
+        // left of center
+        return center - offset;
     } else {
-        // Odd: right of center
-        int col = center + dist + 1;
-        if (col < cols) return col;
-        else return center - dist - 1; 
+        // right of center
+        return center + offset;
     }
 }
